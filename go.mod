@@ -2,10 +2,7 @@ module hexahang.com
 
 go 1.22
 
-require (
-	github.com/jackc/pgx/v5 v5.5.5
-	github.com/jackc/pgxpool v1.0.0
-)
+require github.com/jackc/pgx/v5 v5.5.5
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
