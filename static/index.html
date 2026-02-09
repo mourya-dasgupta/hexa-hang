@@ -275,6 +275,14 @@
             margin-top: 4rem;
         }
 
+        .loading-spinner {
+            text-align: center;
+            padding: 4rem;
+            color: var(--color-gray);
+            font-size: 1.2rem;
+            grid-column: 1 / -1;
+        }
+
         .product-card {
             background: #fafafa;
             border-radius: 20px;
@@ -577,56 +585,9 @@
             </p>
         </div>
 
-        <div class="product-grid">
-            <div class="product-card fade-in">
-                <div class="product-image">
-                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                    </svg>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">Hexa Classic</h3>
-                    <p class="product-description">
-                        Our signature hexagonal design. Perfect for 10-15 medals. 
-                        Wall-mounted elegance.
-                    </p>
-                    <p class="product-price">₹2,499</p>
-                </div>
-            </div>
-
-            <div class="product-card fade-in">
-                <div class="product-image">
-                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 6v6l4 2"/>
-                    </svg>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">Hexa Pro</h3>
-                    <p class="product-description">
-                        Extended capacity for serious athletes. 
-                        Holds 20+ medals with premium finish.
-                    </p>
-                    <p class="product-price">₹3,999</p>
-                </div>
-            </div>
-
-            <div class="product-card fade-in">
-                <div class="product-image">
-                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        <circle cx="12" cy="12" r="8"/>
-                    </svg>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">Hexa Elite</h3>
-                    <p class="product-description">
-                        The ultimate display. LED backlighting included. 
-                        A statement piece for champions.
-                    </p>
-                    <p class="product-price">₹5,999</p>
-                </div>
-            </div>
+        <div class="product-grid" id="product-grid">
+            <!-- Products will be loaded here dynamically -->
+            <div class="loading-spinner">Loading products...</div>
         </div>
     </section>
 
@@ -733,6 +694,62 @@
                 }
             });
         });
+
+        // Fetch and display products from API
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch products');
+                }
+                
+                const products = await response.json();
+                
+                const productGrid = document.getElementById('product-grid');
+                productGrid.innerHTML = ''; // Clear loading spinner
+                
+                products.forEach(product => {
+                    // Convert price from paise to rupees
+                    const priceInRupees = (product.price / 100).toLocaleString('en-IN');
+                    
+                    // Create product card
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card fade-in';
+                    
+                    productCard.innerHTML = `
+                        <div class="product-image">
+                            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                            </svg>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-description">${product.description}</p>
+                            <p class="product-price">₹${priceInRupees}</p>
+                        </div>
+                    `;
+                    
+                    // Make card clickable
+                    productCard.addEventListener('click', () => {
+                        // For now, just scroll to top - we'll add product detail pages later
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    
+                    productGrid.appendChild(productCard);
+                });
+                
+                // Trigger scroll animations for new elements
+                document.querySelectorAll('.product-card').forEach(el => observer.observe(el));
+                
+            } catch (error) {
+                console.error('Failed to load products:', error);
+                document.getElementById('product-grid').innerHTML = 
+                    '<p style="text-align: center; color: #999; padding: 4rem;">Failed to load products. Please try again later.</p>';
+            }
+        }
+
+        // Load products when page loads
+        window.addEventListener('DOMContentLoaded', loadProducts);
     </script>
 </body>
 </html>
